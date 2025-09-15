@@ -1,0 +1,51 @@
+<script type="module">
+  // ⚡ Firebase SDK moderne
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+  // Ta config Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyAn9pP4NR26KnG1by_5X_LTI4_aHXfXIuc",
+    authDomain: "colibichat.firebaseapp.com",
+    projectId: "colibichat",
+    storageBucket: "colibichat.firebasestorage.app",
+    messagingSenderId: "561322381627",
+    appId: "1:561322381627:web:c2a1e0fc7f25f5d7b3e71e",
+    measurementId: "G-CDLZDY69D8"
+  };
+
+  // Initialisation Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const messagesDiv = document.getElementById("messages");
+
+  async function sendMessage() {
+    const user = document.getElementById("username").value;
+    const text = document.getElementById("message").value;
+    if(user && text) {
+      await addDoc(collection(db, "messages"), {
+        user: user,
+        text: text,
+        time: Date.now()
+      });
+      document.getElementById("message").value = "";
+    }
+  }
+
+  // Écoute en temps réel
+  const q = query(collection(db, "messages"), orderBy("time"));
+  onSnapshot(q, (snapshot) => {
+    messagesDiv.innerHTML = "";
+    snapshot.forEach(doc => {
+      const msg = doc.data();
+      const div = document.createElement("div");
+      div.className = "msg " + (msg.user === document.getElementById("username").value ? "me" : "other");
+      div.innerText = msg.user + ": " + msg.text;
+      messagesDiv.appendChild(div);
+    });
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  });
+
+  window.sendMessage = sendMessage;
+</script>
